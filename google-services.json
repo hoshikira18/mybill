@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "492366621793",
+    "project_id": "locket-clone-84836",
+    "storage_bucket": "locket-clone-84836.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:492366621793:android:bfe5b43c8932bcb5500e20",
+        "android_client_info": {
+          "package_name": "com.hoshikira.mybill"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "492366621793-17re0grermuj8skfvjst3umrrvbkrb7u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQfziMIypiR0MfJvEvLS7GgrmNBIJrgBE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "492366621793-17re0grermuj8skfvjst3umrrvbkrb7u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "492366621793-bt9rq4b3nfk85vqa3pb5p2kmss81v0go.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.hoshikira.rnfirebase"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
