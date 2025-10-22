@@ -6,12 +6,13 @@ import React, {
   ReactNode,
 } from "react";
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 
 interface AuthContextType {
   user: FirebaseAuthTypes.User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
 }
@@ -41,9 +42,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, name: string) => {
     try {
-      await auth().createUserWithEmailAndPassword(email, password);
+      const userCredential = await auth().createUserWithEmailAndPassword(
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Update user profile with name
+      await user.updateProfile({
+        displayName: name,
+      });
+
+      // Create user record in Firestore
+      await firestore().collection("users").doc(user.uid).set({
+        uid: user.uid,
+        email: email,
+        name: name,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+        updatedAt: firestore.FieldValue.serverTimestamp(),
+      });
     } catch (error: any) {
       throw new Error(error.message);
     }
