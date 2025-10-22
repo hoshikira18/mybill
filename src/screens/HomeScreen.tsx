@@ -17,6 +17,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.title}>Welcome!</Text>
+        <Text style={styles.title}>Welcome!</Text>
         <Text style={styles.email}>{user?.email}</Text>
         <Text style={styles.info}>You are successfully logged in</Text>
       </View>
