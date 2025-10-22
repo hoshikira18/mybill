@@ -107,6 +107,7 @@ export default function HomeScreen({ navigation }: any) {
           <Text style={styles.email}>{user?.email}</Text>
         </View>
 
+
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FF6B35" />
