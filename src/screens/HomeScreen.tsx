@@ -52,7 +52,7 @@ export default function HomeScreen({ navigation }: any) {
     try {
       setLoading(true);
       const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
-      
+
       // Fetch budget
       const budgetDoc = await firestore()
         .collection("budgets")

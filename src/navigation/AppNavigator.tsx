@@ -27,7 +27,10 @@ export default function AppNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
           <>
-            <Stack.Screen name="QuickBillCapture" component={QuickBillCaptureScreen} />
+            <Stack.Screen
+              name="QuickBillCapture"
+              component={QuickBillCaptureScreen}
+            />
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="BudgetSetup" component={BudgetSetupScreen} />
           </>
