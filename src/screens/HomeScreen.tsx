@@ -107,7 +107,6 @@ export default function HomeScreen({ navigation }: any) {
           <Text style={styles.email}>{user?.email}</Text>
         </View>
 
-
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FF6B35" />
@@ -115,9 +114,12 @@ export default function HomeScreen({ navigation }: any) {
         ) : (
           <View style={styles.card}>
             <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>Ngân sách tháng này</Text>
+              <Text style={styles.cardTitle}>Còn lại</Text>
               <Text style={styles.cardAmount}>
-                {budget ? formatCurrency(budget.totalBudget) : "0"} ₫
+                {budget
+                  ? formatCurrency(budget.totalBudget - totalExpenses)
+                  : "0"}{" "}
+                ₫
               </Text>
             </View>
             <View style={styles.cardStats}>
@@ -129,12 +131,9 @@ export default function HomeScreen({ navigation }: any) {
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Còn lại</Text>
+                <Text style={styles.statLabel}>Ngân sách tháng này</Text>
                 <Text style={styles.statValue}>
-                  {budget
-                    ? formatCurrency(budget.totalBudget - totalExpenses)
-                    : "0"}{" "}
-                  ₫
+                  {budget ? formatCurrency(budget.totalBudget) : "0"} ₫
                 </Text>
               </View>
             </View>
