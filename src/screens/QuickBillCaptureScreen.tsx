@@ -17,6 +17,14 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import * as ImagePicker from "expo-image-picker";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import CameraIcon from "../components/icons/CameraIcon";
+import {
+  ImageIcon,
+  MessengeIcon,
+  MicIcon,
+  PenIcon,
+  UserIcon,
+} from "../components/icons";
 
 const { width } = Dimensions.get("window");
 
@@ -78,6 +86,10 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
 
   const handleAIChat = () => {
     Alert.alert("AI Chat", "Chức năng AI chat đang được phát triển");
+  };
+
+  const handleUserButtonPress = () => {
+    navigation.navigate("Home");
   };
 
   const handleSave = async () => {
@@ -172,14 +184,14 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.navigate("Home")}
+            style={styles.aiChatButton}
+            onPress={handleUserButtonPress}
           >
-            <Text style={styles.backButtonText}>←</Text>
+            <UserIcon color="white" size={32} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Trang chủ</Text>
           <TouchableOpacity style={styles.aiChatButton} onPress={handleAIChat}>
-            <Text style={styles.aiChatText}>💬</Text>
+            <MessengeIcon color="white" size={32} />
           </TouchableOpacity>
         </View>
 
@@ -195,18 +207,14 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
             )}
             {mode === "audio" && (
               <View style={styles.audioContainer}>
-                <Text style={styles.audioIcon}>
-                  {/* <CameraIcon width={80} height={80} /> */}
-                </Text>
-                <Text style={styles.audioText}>Sẵn sàng ghi âm</Text>
+                <Text style={styles.audioIcon}></Text>
+                <Text style={styles.audioText}>Coming Soon</Text>
               </View>
             )}
             {mode === "text" && (
               <View style={styles.textContainer}>
-                <Text style={styles.textIcon}>
-                  {/* <CameraIcon width={80} height={80} /> */}
-                </Text>
-                <Text style={styles.textHelp}>Nhập thông tin chi tiêu</Text>
+                <Text style={styles.textIcon}></Text>
+                <Text style={styles.textHelp}>Coming Soon</Text>
               </View>
             )}
           </View>
@@ -226,7 +234,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
                   mode === "camera" && styles.modeButtonTextActive,
                 ]}
               >
-                📷
+                <CameraIcon color="white" />
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -242,7 +250,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
                   mode === "audio" && styles.modeButtonTextActive,
                 ]}
               >
-                🎤
+                <MicIcon color="white" />
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -258,7 +266,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
                   mode === "text" && styles.modeButtonTextActive,
                 ]}
               >
-                📝
+                <PenIcon color="white" />
               </Text>
             </TouchableOpacity>
           </View>
@@ -266,7 +274,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-              <Text style={styles.uploadIcon}>🖼️</Text>
+              <ImageIcon color="white" size={40} />
             </TouchableOpacity>
 
             {mode === "camera" && (
@@ -290,7 +298,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
             )}
 
             <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-              <Text style={styles.uploadIcon}>🖼️</Text>
+              <ImageIcon color="white" size={40} />
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -333,8 +341,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333333",
   },
   backButton: {
     width: 40,
@@ -354,15 +360,8 @@ const styles = StyleSheet.create({
   aiChatButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#1A1A1A",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#333333",
-  },
-  aiChatText: {
-    fontSize: 20,
   },
   content: {
     flex: 1,
@@ -375,6 +374,8 @@ const styles = StyleSheet.create({
     width: "100%",
     height: width,
     borderRadius: 16,
+    borderWidth: 2,
+    borderColor: "#333333",
     backgroundColor: "#1A1A1A",
     overflow: "hidden",
   },
@@ -421,13 +422,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
     backgroundColor: "#1A1A1A",
-    borderWidth: 2,
-    borderColor: "#333333",
     minWidth: 60,
     alignItems: "center",
   },
   modeButtonActive: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#FF6B3580",
     borderColor: "#FF6B35",
   },
   modeButtonText: {
@@ -446,15 +445,11 @@ const styles = StyleSheet.create({
   uploadButton: {
     width: 60,
     height: 60,
-    borderRadius: 12,
-    backgroundColor: "#1A1A1A",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#333333",
   },
   uploadIcon: {
-    fontSize: 28,
+    fontSize: 60,
   },
   captureButton: {
     width: 80,
