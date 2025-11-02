@@ -12,6 +12,7 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import { chatAboutExpenses } from "../services/geminiService";
 import { saveChatMessage } from "../services/chatService";
@@ -177,6 +178,17 @@ export default function ChatWithAIScreen({ route, navigation }: any) {
     }
   }, [messages]);
 
+  // Scroll to end when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      if (messages.length > 0 && !initialLoading) {
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 300);
+      }
+    }, [messages.length, initialLoading])
+  );
+
   const handleSend = async () => {
     if (!inputText.trim() || loading || !user?.uid) return;
 
@@ -210,10 +222,27 @@ export default function ChatWithAIScreen({ route, navigation }: any) {
         text: msg.text,
       }));
 
+      let i = 0;
+      if (conversationHistory.length > 0) {
+        for (let j = 0; j < conversationHistory.length; j++) {
+          if (conversationHistory[j].role === "model") {
+            i++;
+          } else {
+            break;
+          }
+        }
+      }
+
+      let validHistory = conversationHistory;
+
+      if (i > 0) {
+        validHistory = conversationHistory.slice(i);
+      }
+
       // Get AI response
       const aiResponse = await chatAboutExpenses(
         userMessage.text,
-        conversationHistory,
+        validHistory,
         userContext
       );
 
@@ -291,7 +320,10 @@ export default function ChatWithAIScreen({ route, navigation }: any) {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={"height"}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -301,10 +333,8 @@ export default function ChatWithAIScreen({ route, navigation }: any) {
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Chat với AI</Text>
-            <Text style={styles.headerSubtitle}>
-              Trợ lý tài chính thông minh
-            </Text>
+            <Text style={styles.headerTitle}>AI Wife</Text>
+            {/* <Text style={styles.headerSubtitle}>Vợ của mọi nhà</Text> */}
           </View>
           <View style={styles.headerRight} />
         </View>
@@ -325,6 +355,9 @@ export default function ChatWithAIScreen({ route, navigation }: any) {
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.messagesList}
               showsVerticalScrollIndicator={false}
+              onContentSizeChange={() => {
+                flatListRef.current?.scrollToEnd({ animated: true });
+              }}
             />
 
             {/* Loading Indicator */}
