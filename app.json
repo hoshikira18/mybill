@@ -2,11 +2,11 @@
   "expo": {
     "name": "mybill",
     "slug": "mybill",
+    "sdkVersion": "54.0.0",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -41,8 +41,7 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "READ_MEDIA_IMAGES",
-        "READ_MEDIA_VIDEO",
-        "POST_NOTIFICATIONS"
+        "READ_MEDIA_VIDEO"
       ]
     },
     "web": {
@@ -51,13 +50,7 @@
     "plugins": [
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/icon.png",
-          "color": "#ffffff"
-        }
-      ],
+      "expo-notifications",
       [
         "expo-camera",
         {

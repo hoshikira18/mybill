@@ -2,7 +2,10 @@ import React, { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "./src/context/AuthContext";
 import AppNavigator from "./src/navigation/AppNavigator";
-import { requestNotificationPermission } from "./src/services/notificationService";
+import {
+  requestNotificationPermission,
+  setupNotificationListeners,
+} from "./src/services/notificationService";
 
 export default function App() {
   useEffect(() => {
@@ -16,6 +19,14 @@ export default function App() {
     };
 
     checkNotificationPermission();
+
+    // Setup foreground/background notification listeners
+    const unsubscribe = setupNotificationListeners();
+
+    return () => {
+      // cleanup foreground listener
+      if (typeof unsubscribe === "function") unsubscribe();
+    };
   }, []);
 
   return (

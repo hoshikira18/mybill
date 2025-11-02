@@ -40,7 +40,26 @@ exports.onExpenseCreated = onDocumentCreated(
           title: "Chi tiêu mới được thêm",
           body: `Chi tiêu của bạn: ${expenseData.description} - ${expenseData.amount} VND`,
         },
+        // Ensure high priority delivery on Android and iOS
         token: userFCMToken,
+        android: {
+          priority: "high",
+          notification: {
+            channelId: "default",
+          },
+        },
+        apns: {
+          headers: {
+            // APNs priority 10 = immediate delivery
+            "apns-priority": "10",
+          },
+          payload: {
+            aps: {
+              // content-available can help wake the app for background processing
+              "content-available": 1,
+            },
+          },
+        },
       };
 
       const admin = require("firebase-admin");

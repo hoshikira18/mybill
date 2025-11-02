@@ -1,6 +1,34 @@
 import messaging from "@react-native-firebase/messaging";
 import firestore from "@react-native-firebase/firestore";
 import { Alert, Platform } from "react-native";
+import * as Notifications from 'expo-notifications';
+
+// Show system notifications when app is foreground (expo-notifications)
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    // newer SDKs require these fields
+    shouldShowBanner: true,
+    shouldShowList: true,
+    priority: Notifications.AndroidNotificationPriority.MAX,
+  }),
+});
+
+async function configureAndroidChannel() {
+  if (Platform.OS === 'android') {
+    try {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'Default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF6B35',
+      });
+    } catch (err) {
+      console.warn('Could not create Android notification channel:', err);
+    }
+  }
+}
 
 /**
  * Request notification permissions from user
@@ -71,9 +99,17 @@ export async function sendLocalNotification(
   body: string
 ): Promise<void> {
   try {
-    // This would require expo-notifications for local notifications
-    // For now, we'll use Alert as a fallback
-    Alert.alert(title, body);
+    // Use expo-notifications to show a system/local notification immediately
+    await configureAndroidChannel();
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title,
+        body,
+        priority: Notifications.AndroidNotificationPriority.MAX,
+      },
+      trigger: null,
+      
+    });
   } catch (error) {
     console.error("Error sending local notification:", error);
   }
@@ -88,21 +124,46 @@ export function setupNotificationListeners(
   // Handle foreground notifications
   const unsubscribeForeground = messaging().onMessage(async (remoteMessage) => {
     console.log("Foreground notification:", remoteMessage);
-
+    // if a custom handler is provided, call it
     if (onNotificationReceived) {
       onNotificationReceived(remoteMessage);
-    } else {
-      // Show alert if no custom handler
-      Alert.alert(
-        remoteMessage.notification?.title || "Thông báo",
-        remoteMessage.notification?.body || ""
-      );
+      return;
+    }
+
+    // Show a system/local notification for foreground messages
+    try {
+      const dataTitle = remoteMessage.data && typeof remoteMessage.data.title === 'string' ? remoteMessage.data.title : undefined;
+      const dataBody = remoteMessage.data && typeof remoteMessage.data.body === 'string' ? remoteMessage.data.body : undefined;
+      const title = remoteMessage.notification?.title ?? dataTitle ?? 'Thông báo';
+      const body = remoteMessage.notification?.body ?? dataBody ?? '';
+
+      await configureAndroidChannel();
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+          data: remoteMessage.data || {},
+          priority: Notifications.AndroidNotificationPriority.MAX,
+        },
+        trigger: null,
+      });
+    } catch (err) {
+      console.warn('Failed to present local notification, falling back to Alert:', err);
+      Alert.alert(remoteMessage.notification?.title || 'Thông báo', remoteMessage.notification?.body || '');
     }
   });
 
   // Handle background/quit state notifications
   messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-    console.log("Background notification:", remoteMessage);
+    await Notifications.scheduleNotificationAsync({
+        content: {
+          title: remoteMessage.notification?.title || 'Thông báo',
+          body: remoteMessage.notification?.body || '',
+          data: remoteMessage.data || {},
+          priority: Notifications.AndroidNotificationPriority.MAX,
+        },
+        trigger: null,
+      });
   });
 
   // Handle notification opened app
