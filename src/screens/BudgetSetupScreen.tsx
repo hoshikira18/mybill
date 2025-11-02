@@ -162,14 +162,14 @@ export default function BudgetSetupScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: "#000",
   },
   container: {
     flex: 1,
     backgroundColor: "#000000",
   },
   scrollContainer: {
-    padding: 24,
+    padding: 12,
     paddingBottom: 40,
   },
   header: {

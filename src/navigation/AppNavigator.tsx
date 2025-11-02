@@ -8,6 +8,7 @@ import SignupScreen from "../screens/SignupScreen";
 import HomeScreen from "../screens/HomeScreen";
 import BudgetSetupScreen from "../screens/BudgetSetupScreen";
 import QuickBillCaptureScreen from "../screens/QuickBillCaptureScreen";
+import ChatWithAIScreen from "../screens/ChatWithAIScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +34,7 @@ export default function AppNavigator() {
             />
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="BudgetSetup" component={BudgetSetupScreen} />
+            <Stack.Screen name="ChatWithAI" component={ChatWithAIScreen} />
           </>
         ) : (
           <>

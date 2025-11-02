@@ -25,12 +25,15 @@ import {
   MessengeIcon,
   MicIcon,
   PenIcon,
+  RefreshIcon,
   UserIcon,
 } from "../components/icons";
+import CaptureButton from "../components/CaptureButton";
 import {
   extractBillFromImage,
   ExtractedBillData,
 } from "../services/geminiService";
+import { CATEGORIES } from "../config/categories";
 
 const { width } = Dimensions.get("window");
 
@@ -41,6 +44,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [mode, setMode] = useState<CaptureMode>("camera");
+  const [facing, setFacing] = useState<"front" | "back">("back");
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState<string>("");
   const [amount, setAmount] = useState("");
@@ -51,6 +55,8 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
     null
   );
   const [showExtractedData, setShowExtractedData] = useState(false);
+
+  const [selectedCategory, setSelectedCategory] = useState<string>("Khác");
 
   const uploadImageToStorage = async (uri: string): Promise<string> => {
     const filename = `bills/${user?.uid}/${Date.now()}.jpg`;
@@ -68,7 +74,8 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
           skipProcessing: true, // Skip additional processing for speed
         });
         if (photo) {
-          await processImageWithLLM(photo.uri);
+          // Show preview first. User will press "Nhập" to start AI processing.
+          setSelectedImage(photo.uri);
         }
       } catch (error) {
         Alert.alert("Lỗi", "Không thể chụp ảnh");
@@ -88,7 +95,8 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
       });
 
       if (!result.canceled && result.assets[0]) {
-        await processImageWithLLM(result.assets[0].uri);
+        // Show preview first. User will press "Nhập" to start AI processing.
+        setSelectedImage(result.assets[0].uri);
       }
     } catch (error) {
       Alert.alert("Lỗi", "Không thể mở thư viện ảnh");
@@ -119,6 +127,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
       setAmount(data.amount?.toString() || "");
       setDescription(data.description || "");
       setMerchantName(data.merchantName || "");
+      setSelectedCategory(data.category || "Khác");
       setShowExtractedData(true);
     } catch (error: any) {
       setLoading(false);
@@ -142,6 +151,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
                 items: null,
                 confidence: "low" as const,
                 rawText: "",
+                category: null,
               });
             },
           },
@@ -156,7 +166,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
   };
 
   const handleAIChat = () => {
-    Alert.alert("AI Chat", "Chức năng AI chat đang được phát triển");
+    navigation.navigate("ChatWithAI");
   };
 
   const handleUserButtonPress = () => {
@@ -175,6 +185,8 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
     }
 
     setLoading(true);
+    setLoadingStep("Đang lưu chi tiêu...");
+
     try {
       const currentMonth = new Date().toISOString().slice(0, 7);
       let imageUrl = null;
@@ -188,6 +200,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
         amount: parseFloat(amount),
         description: description.trim(),
         merchantName: merchantName.trim() || null,
+        category: selectedCategory || "Khác",
         type: "camera",
         imageUrl: imageUrl,
         month: currentMonth,
@@ -199,19 +212,48 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
         updatedAt: firestore.FieldValue.serverTimestamp(),
       };
 
+      // Save expense - Cloud Function will handle AI analysis and notification
       await firestore().collection("expenses").add(expenseData);
 
-      setSelectedImage(null);
-      setAmount("");
-      setDescription("");
-      setMerchantName("");
-      setExtractedData(null);
-      setShowExtractedData(false);
-      navigation.navigate("Home");
+      setLoadingStep("Đang xử lý...");
+
+      // Show success message
+      Alert.alert(
+        "Thành công",
+        "Chi tiêu đã được lưu. AI đang phân tích và sẽ gửi thông báo cho bạn!",
+        [
+          {
+            text: "Xem chat",
+            onPress: () => {
+              setSelectedImage(null);
+              setAmount("");
+              setDescription("");
+              setMerchantName("");
+              setExtractedData(null);
+              setShowExtractedData(false);
+              navigation.navigate("ChatWithAI");
+            },
+          },
+          {
+            text: "Về trang chủ",
+            onPress: () => {
+              setSelectedImage(null);
+              setAmount("");
+              setDescription("");
+              setMerchantName("");
+              setExtractedData(null);
+              setShowExtractedData(false);
+              navigation.navigate("Home");
+            },
+          },
+        ]
+      );
     } catch (error: any) {
+      console.error("Error saving expense:", error);
       Alert.alert("Lỗi", error.message || "Lưu chi tiêu thất bại");
     } finally {
       setLoading(false);
+      setLoadingStep("");
     }
   };
 
@@ -282,7 +324,8 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
                   <CameraView
                     ref={cameraRef}
                     style={styles.camera}
-                    facing="back"
+                    facing={facing}
+                    mode="picture"
                   />
                 )}
                 {mode === "audio" && (
@@ -316,7 +359,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
                     setMerchantName("");
                   }}
                 >
-                  <Text style={styles.retakeButtonText}>📷 Chụp lại</Text>
+                  <RefreshIcon color="white" size={24} />
                 </TouchableOpacity>
               </>
             )}
@@ -384,27 +427,46 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
               </TouchableOpacity>
 
               {mode === "camera" && (
-                <TouchableOpacity
-                  style={styles.captureButton}
-                  onPress={takePicture}
-                >
-                  <View style={styles.captureButtonInner} />
-                </TouchableOpacity>
+                <CaptureButton
+                  selectedImage={selectedImage}
+                  loading={loading}
+                  onPress={() => {
+                    if (selectedImage) {
+                      // Start AI processing on the selected/previewed image
+                      processImageWithLLM(selectedImage);
+                    } else {
+                      // No preview yet — take a picture and show preview
+                      takePicture();
+                    }
+                  }}
+                />
               )}
               {mode === "audio" && (
                 <TouchableOpacity
-                  style={styles.recordButton}
+                  style={styles.captureButton}
                   onPress={handleStartRecording}
                 >
-                  <Text style={styles.recordButtonText}>⏺</Text>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: "700",
+                    }}
+                  >
+                    Bắt đầu ghi âm
+                  </Text>
                 </TouchableOpacity>
               )}
               {mode === "text" && (
                 <View style={styles.captureButtonPlaceholder} />
               )}
 
-              <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-                <ImageIcon color="white" size={40} />
+              <TouchableOpacity
+                style={styles.uploadButton}
+                onPress={() => {
+                  setFacing(facing === "back" ? "front" : "back");
+                }}
+              >
+                <RefreshIcon color="white" size={40} />
               </TouchableOpacity>
             </View>
           )}
@@ -464,7 +526,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
                   {/* Date */}
                   {extractedData?.date && (
                     <View style={[styles.inputGroup, { flex: 1 }]}>
-                      <Text style={styles.label}>📅 Ngày</Text>
+                      <Text style={styles.label}>Ngày</Text>
                       <View style={styles.dateBox}>
                         <Text style={styles.dateText}>
                           {extractedData.date}
@@ -481,7 +543,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
                         { flex: extractedData?.date ? 1.5 : 1 },
                       ]}
                     >
-                      <Text style={styles.label}>🏪 Cửa hàng</Text>
+                      <Text style={styles.label}>Cửa hàng</Text>
                       <TextInput
                         style={styles.input}
                         value={merchantName}
@@ -495,7 +557,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
 
                 {/* Amount - Prominent */}
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>💰 Tổng tiền *</Text>
+                  <Text style={styles.label}>Tổng tiền *</Text>
                   <TextInput
                     style={styles.amountInput}
                     value={amount}
@@ -508,11 +570,43 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
                   <Text style={styles.amountHint}>VNĐ</Text>
                 </View>
 
+                {/* Category chips */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Danh mục</Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.chipsContainer}
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <TouchableOpacity
+                        key={cat}
+                        style={[
+                          styles.chip,
+                          selectedCategory === cat && styles.chipSelected,
+                        ]}
+                        onPress={() => setSelectedCategory(cat)}
+                        disabled={loading}
+                      >
+                        <Text
+                          style={
+                            selectedCategory === cat
+                              ? styles.chipSelectedText
+                              : styles.chipText
+                          }
+                        >
+                          {cat}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+
                 {/* Items List - Enhanced */}
                 {extractedData?.items && extractedData.items.length > 0 && (
                   <View style={styles.inputGroup}>
                     <Text style={styles.label}>
-                      🛒 Món hàng ({extractedData.items.length})
+                      Món hàng ({extractedData.items.length})
                     </Text>
                     <View style={styles.itemsContainer}>
                       {extractedData.items.map((item, index) => (
@@ -541,7 +635,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
 
                 {/* Description */}
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>📝 Mô tả *</Text>
+                  <Text style={styles.label}>Mô tả *</Text>
                   <TextInput
                     style={styles.descriptionInput}
                     value={description}
@@ -608,7 +702,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
       {/* Loading Overlay */}
       {loading && (
         <View style={styles.loadingOverlay}>
-          <View style={styles.loadingCard}>
+          {/* <View style={styles.loadingCard}>
             <ActivityIndicator size="large" color="#FF6B35" />
             <Text style={styles.loadingText}>{loadingStep}</Text>
             <Text style={styles.loadingSubtext}>
@@ -616,7 +710,7 @@ export default function QuickBillCaptureScreen({ navigation }: any) {
                 ? "✓"
                 : "Vui lòng đợi trong giây lát"}
             </Text>
-          </View>
+          </View> */}
         </View>
       )}
     </SafeAreaView>
@@ -695,16 +789,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    padding: 16,
+    // padding: 16,
     paddingBottom: 32,
     gap: 16,
   },
   captureArea: {
     width: "100%",
-    height: width * 0.9,
-    borderRadius: 16,
+    height: width,
+    borderRadius: 80,
     borderWidth: 1,
-    borderColor: "#FF6B3540",
     backgroundColor: "#0D0D0D",
     overflow: "hidden",
   },
@@ -781,8 +874,8 @@ const styles = StyleSheet.create({
     fontSize: 60,
   },
   captureButton: {
-    width: 80,
-    height: 80,
+    width: "50%",
+    paddingVertical: 16,
     borderRadius: 40,
     backgroundColor: "#FFFFFF",
     justifyContent: "center",
@@ -862,7 +955,7 @@ const styles = StyleSheet.create({
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 999,
@@ -937,6 +1030,32 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#FF6B35",
     fontWeight: "600",
+  },
+  chipsContainer: {
+    paddingVertical: 8,
+    gap: 8,
+  },
+  chip: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: "#1A1A1A",
+    borderWidth: 1,
+    borderColor: "#333333",
+    marginRight: 8,
+  },
+  chipText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+  },
+  chipSelected: {
+    backgroundColor: "#FF6B35",
+    borderColor: "#FF6B35",
+  },
+  chipSelectedText: {
+    color: "#000000",
+    fontSize: 13,
+    fontWeight: "700",
   },
   itemsContainer: {
     backgroundColor: "#0D0D0D",
@@ -1013,11 +1132,11 @@ const styles = StyleSheet.create({
   retakeButton: {
     position: "absolute",
     bottom: 20,
-    right: 20,
+    right: 30,
     backgroundColor: "rgba(0, 0, 0, 0.8)",
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 80,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
