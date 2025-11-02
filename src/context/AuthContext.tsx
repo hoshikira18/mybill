@@ -19,6 +19,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  prompt: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,6 +29,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [prompt, setPrompt] = useState<string>("");
 
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged((user) => {
@@ -37,6 +39,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      // Fetch user-specific prompt from Firestore
+      const fetchPrompt = async () => {
+        try {
+          const snap = await firestore().collection("prompt").limit(1).get();
+          if (!snap.empty) {
+            const doc = snap.docs[0];
+            const data = doc.data() || {};
+            setPrompt(data?.prompt || "");
+          } else {
+            console.log(
+              "No documents found in prompt collection; using default template."
+            );
+          }
+        } catch (err) {
+          console.error("Error fetching prompt collection:", err);
+        }
+      };
+      fetchPrompt();
+    } else {
+      setPrompt("");
+    }
+  }, [user]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -112,7 +139,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, signIn, signUp, signOut, resetPassword }}
+      value={{ user, loading, signIn, signUp, signOut, resetPassword, prompt }}
     >
       {children}
     </AuthContext.Provider>

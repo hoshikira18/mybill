@@ -177,6 +177,7 @@ Quy tắc:
  * Chat with AI about expenses
  */
 export async function chatAboutExpenses(
+  prompt: string,
   userMessage: string,
   conversationHistory?: Array<{ role: "user" | "model"; text: string }>,
   userContext?: {
@@ -222,17 +223,11 @@ ${
 `
       : "";
 
-    const systemPrompt = `Bạn là trợ lý tài chính thông minh, chuyên về quản lý chi tiêu cá nhân. Bạn chỉ trả lời các câu hỏi liên quan đến:
-- Quản lý chi tiêu, ngân sách
-- Phân tích thói quen chi tiêu
-- Gợi ý tiết kiệm, lập kế hoạch tài chính
-- Giải đáp về các khoản chi trong ứng dụng
+    const systemPrompt = `
+    ${prompt}
+    Dữ liệu ngữ cảnh người dùng:
+${contextInfo}`
 
-Nếu câu hỏi không liên quan đến chi tiêu/tài chính cá nhân, lịch sự từ chối và hướng dẫn người dùng hỏi về chủ đề phù hợp.
-
-${contextInfo}
-
-Trả lời ngắn gọn, thân thiện, thực tế bằng tiếng Việt.`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
@@ -245,10 +240,6 @@ Trả lời ngắn gọn, thân thiện, thực tế bằng tiếng Việt.`;
 
     const chat = model.startChat({
       history,
-      generationConfig: {
-        maxOutputTokens: 500,
-        temperature: 0.7,
-      },
     });
 
     const result = await chat.sendMessage(

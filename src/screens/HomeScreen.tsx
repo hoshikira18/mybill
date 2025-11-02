@@ -216,16 +216,16 @@ export default function HomeScreen({ navigation }: any) {
                   const amount = categoryTotals[cat] || 0;
                   if (amount === 0) return null;
                   const COLORS = [
-                    "#FF6B35",
                     "#FF8C42",
-                    "#FFA474",
-                    "#E55525",
-                    "#FFB28A",
-                    "#FF9A66",
-                    "#FF7A2D",
-                    "#D96A2A",
-                    "#C85C20",
-                    "#7A5A3C",
+                    "#008080",
+                    "#003180ff",
+                    "#FF4500",
+                    "#FFDB58",
+                    "#FFFDD0",
+                    "#36454F",
+                    "#6B8E23",
+                    "#FF00FF",
+                    "#ADD8E6",
                   ];
                   return (
                     <View style={styles.legendItem} key={`l-${i}`}>
