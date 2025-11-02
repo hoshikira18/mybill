@@ -15,7 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen({ navigation }: any) {
-  const [email, setEmail] = useState("khuyen@example.com");
+  const [email, setEmail] = useState("khuyen5@gmail.com");
   const [password, setPassword] = useState("666666");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

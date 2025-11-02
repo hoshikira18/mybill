@@ -19,7 +19,8 @@
         "NSCameraUsageDescription": "Ứng dụng cần quyền truy cập camera để chụp ảnh hóa đơn.",
         "NSMicrophoneUsageDescription": "Ứng dụng cần quyền truy cập microphone để ghi âm thông tin hóa đơn.",
         "NSPhotoLibraryUsageDescription": "Ứng dụng cần quyền truy cập thư viện ảnh để chọn ảnh hóa đơn.",
-        "NSPhotoLibraryAddUsageDescription": "Ứng dụng cần quyền lưu ảnh vào thư viện."
+        "NSPhotoLibraryAddUsageDescription": "Ứng dụng cần quyền lưu ảnh vào thư viện.",
+        "NSUserNotificationsUsageDescription": "Ứng dụng cần quyền gửi thông báo để nhắc nhở bạn về chi tiêu và ngân sách."
       }
     },
     "android": {
@@ -40,7 +41,8 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "READ_MEDIA_IMAGES",
-        "READ_MEDIA_VIDEO"
+        "READ_MEDIA_VIDEO",
+        "POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -49,7 +51,13 @@
     "plugins": [
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#ffffff"
+        }
+      ],
       [
         "expo-camera",
         {

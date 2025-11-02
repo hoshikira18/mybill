@@ -7,6 +7,10 @@ import React, {
 } from "react";
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
+import {
+  requestNotificationPermission,
+  saveFCMToken,
+} from "../services/notificationService";
 
 interface AuthContextType {
   user: FirebaseAuthTypes.User | null;
@@ -36,7 +40,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const signIn = async (email: string, password: string) => {
     try {
-      await auth().signInWithEmailAndPassword(email, password);
+      const userCredential = await auth().signInWithEmailAndPassword(
+        email,
+        password
+      );
+
+      // Request notification permission and save FCM token
+      const permissionGranted = await requestNotificationPermission();
+      if (permissionGranted && userCredential.user) {
+        await saveFCMToken(userCredential.user.uid);
+      }
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -63,6 +76,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         createdAt: firestore.FieldValue.serverTimestamp(),
         updatedAt: firestore.FieldValue.serverTimestamp(),
       });
+
+      // Request notification permission and save FCM token
+      const permissionGranted = await requestNotificationPermission();
+      if (permissionGranted) {
+        await saveFCMToken(user.uid);
+      }
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -70,6 +89,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const signOut = async () => {
     try {
+      // Clear FCM token from user record before signing out
+      if (user) {
+        await firestore().collection("users").doc(user.uid).update({
+          fcmToken: firestore.FieldValue.delete(),
+          fcmTokenUpdatedAt: firestore.FieldValue.serverTimestamp(),
+        });
+      }
       await auth().signOut();
     } catch (error: any) {
       throw new Error(error.message);

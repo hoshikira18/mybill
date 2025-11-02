@@ -8,12 +8,16 @@ import { Alert, Platform } from "react-native";
 export async function requestNotificationPermission(): Promise<boolean> {
   try {
     const authStatus = await messaging().requestPermission();
+    console.log("Notification permission status:", authStatus);
+
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
     if (enabled) {
-      console.log("Notification permission granted");
+      console.log("✅ Notification permission granted");
+    } else {
+      console.log("❌ Notification permission denied or not determined");
     }
 
     return enabled;
