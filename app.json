@@ -2,11 +2,11 @@
   "expo": {
     "name": "mybill",
     "slug": "mybill",
+    "sdkVersion": "54.0.0",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -14,7 +14,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.hoshikira.mybill"
+      "bundleIdentifier": "com.hoshikira.mybill",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Ứng dụng cần quyền truy cập camera để chụp ảnh hóa đơn.",
+        "NSMicrophoneUsageDescription": "Ứng dụng cần quyền truy cập microphone để ghi âm thông tin hóa đơn.",
+        "NSPhotoLibraryUsageDescription": "Ứng dụng cần quyền truy cập thư viện ảnh để chọn ảnh hóa đơn.",
+        "NSPhotoLibraryAddUsageDescription": "Ứng dụng cần quyền lưu ảnh vào thư viện.",
+        "NSUserNotificationsUsageDescription": "Ứng dụng cần quyền gửi thông báo để nhắc nhở bạn về chi tiêu và ngân sách."
+      }
     },
     "android": {
       "package": "com.hoshikira.mybill",
@@ -28,7 +35,13 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "INTERNET",
-        "ACCESS_NETWORK_STATE"
+        "ACCESS_NETWORK_STATE",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO"
       ]
     },
     "web": {
@@ -37,7 +50,27 @@
     "plugins": [
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Ứng dụng cần quyền truy cập camera để chụp ảnh hóa đơn.",
+          "microphonePermission": "Ứng dụng cần quyền truy cập microphone để ghi âm thông tin hóa đơn.",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Ứng dụng cần quyền truy cập thư viện ảnh để chọn ảnh hóa đơn."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Ứng dụng cần quyền truy cập microphone để ghi âm thông tin hóa đơn."
+        }
+      ]
     ],
     "extra": {
       "eas": {

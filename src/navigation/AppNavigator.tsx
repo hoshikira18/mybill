@@ -4,7 +4,11 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import LoginScreen from "../screens/LoginScreen";
+import SignupScreen from "../screens/SignupScreen";
 import HomeScreen from "../screens/HomeScreen";
+import BudgetSetupScreen from "../screens/BudgetSetupScreen";
+import QuickBillCaptureScreen from "../screens/QuickBillCaptureScreen";
+import ChatWithAIScreen from "../screens/ChatWithAIScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -23,9 +27,21 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
-          <Stack.Screen name="Home" component={HomeScreen} />
+          <>
+            <Stack.Screen
+              name="QuickBillCapture"
+              component={QuickBillCaptureScreen}
+            />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="BudgetSetup" component={BudgetSetupScreen} />
+            <Stack.Screen name="ChatWithAI" component={ChatWithAIScreen} />
+          </>
         ) : (
-          <Stack.Screen name="Login" component={LoginScreen} />
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Signup" component={SignupScreen} />
+            <Stack.Screen name="BudgetSetup" component={BudgetSetupScreen} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
